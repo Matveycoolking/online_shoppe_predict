@@ -68,6 +68,25 @@ python -m src.eda
 
 Графики сохраняются в `reports/figures/`, текстовый отчёт — в `reports/eda_summary.md`.
 
+## Google Colab
+
+Для защиты анализ, обучение и сравнение моделей также перенесены в самостоятельный notebook:
+
+```text
+notebooks/online_shopper_intention_colab.ipynb
+```
+
+Как использовать:
+
+1. Открыть notebook в Google Colab.
+2. Запустить ячейки сверху вниз.
+3. В ячейке загрузки выбрать файл `data.csv`.
+4. После обучения скачать `best_model.pkl`, `metadata.json` и `model_comparison.csv`.
+5. При необходимости положить скачанные файлы в локальный проект:
+   - `models/best_model.pkl`
+   - `models/metadata.json`
+   - `reports/model_comparison.csv`
+
 ## Обучение моделей
 
 ```bash
