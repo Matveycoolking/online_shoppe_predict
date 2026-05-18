@@ -9,7 +9,7 @@ import joblib
 import pandas as pd
 from sklearn.ensemble import HistGradientBoostingClassifier, RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import RandomizedSearchCV, StratifiedKFold, train_test_split
 from sklearn.pipeline import Pipeline
 
 from src.config import (
@@ -23,7 +23,12 @@ from src.config import (
 )
 from src.data_loading import load_data
 from src.evaluate import evaluate_model
-from src.preprocessing import CATEGORICAL_FEATURES, NUMERIC_FEATURES, build_preprocessor
+from src.preprocessing import (
+    CATEGORICAL_FEATURES,
+    ENGINEERED_NUMERIC_FEATURES,
+    NUMERIC_FEATURES,
+    build_full_preprocessor,
+)
 
 
 def prepare_data(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.Series]:
@@ -69,11 +74,56 @@ def build_models() -> dict[str, Any]:
     return models
 
 
+def build_tuned_random_forest(X_train: pd.DataFrame, y_train: pd.Series) -> Pipeline:
+    """Tune Random Forest with a small randomized search."""
+    pipeline = Pipeline(
+        steps=[
+            ("preprocessor", build_full_preprocessor()),
+            (
+                "model",
+                RandomForestClassifier(
+                    class_weight="balanced",
+                    random_state=RANDOM_STATE,
+                    n_jobs=-1,
+                ),
+            ),
+        ]
+    )
+
+    param_distributions = {
+        "model__n_estimators": [200, 300, 500],
+        "model__max_depth": [None, 6, 10, 14],
+        "model__min_samples_split": [2, 5, 10],
+        "model__min_samples_leaf": [1, 2, 4],
+        "model__max_features": ["sqrt", "log2", None],
+    }
+
+    cv = StratifiedKFold(
+        n_splits=3,
+        shuffle=True,
+        random_state=RANDOM_STATE,
+    )
+    search = RandomizedSearchCV(
+        estimator=pipeline,
+        param_distributions=param_distributions,
+        n_iter=8,
+        scoring="f1",
+        cv=cv,
+        random_state=RANDOM_STATE,
+        n_jobs=-1,
+        verbose=1,
+    )
+    search.fit(X_train, y_train)
+    print(f"Best Random Forest Tuned params: {search.best_params_}")
+    print(f"Best Random Forest Tuned CV F1: {search.best_score_:.4f}")
+    return search.best_estimator_
+
+
 def _build_pipeline(model: Any) -> Pipeline:
     """Wrap preprocessing and estimator into one sklearn Pipeline."""
     return Pipeline(
         steps=[
-            ("preprocessor", build_preprocessor()),
+            ("preprocessor", build_full_preprocessor()),
             ("model", model),
         ]
     )
@@ -128,6 +178,7 @@ def _save_best_model(
         "features": {
             "numeric": NUMERIC_FEATURES,
             "categorical": CATEGORICAL_FEATURES,
+            "engineered": ENGINEERED_NUMERIC_FEATURES,
         },
         "target": TARGET_COLUMN,
     }
@@ -164,6 +215,12 @@ def train_models() -> pd.DataFrame:
         trained_models[model_name] = pipeline
         metrics_by_model[model_name] = metrics
         rows.append(_flatten_metrics(model_name, metrics))
+
+    tuned_rf = build_tuned_random_forest(X_train, y_train)
+    tuned_rf_metrics = evaluate_model(tuned_rf, X_test, y_test)
+    trained_models["Random Forest Tuned"] = tuned_rf
+    metrics_by_model["Random Forest Tuned"] = tuned_rf_metrics
+    rows.append(_flatten_metrics("Random Forest Tuned", tuned_rf_metrics))
 
     comparison = pd.DataFrame(rows).sort_values(
         by=["f1", "roc_auc"],

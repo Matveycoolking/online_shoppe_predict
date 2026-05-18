@@ -1,0 +1,14 @@
+.git
+.venv
+venv
+__pycache__
+*.pyc
+.env
+.ipynb_checkpoints
+catboost_info
+reports
+notebooks
+GoogleColab
+scripts
+frontend
+*.pptx

@@ -1,0 +1,17 @@
+services:
+  backend:
+    build: .
+    container_name: internet-buying-backend
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: internet-buying-frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    restart: unless-stopped

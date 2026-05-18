@@ -93,7 +93,7 @@ notebooks/online_shopper_intention_colab.ipynb
 python -m src.train
 ```
 
-Команда обучает Logistic Regression, Random Forest и CatBoost. Если CatBoost недоступен, используется `HistGradientBoostingClassifier`.
+Команда обучает Logistic Regression, Random Forest, CatBoost и дополнительно подбирает гиперпараметры для `Random Forest Tuned`. Если CatBoost недоступен, используется `HistGradientBoostingClassifier`.
 
 Результаты сохраняются в:
 
@@ -105,11 +105,12 @@ python -m src.train
 
 | Модель | Accuracy | Precision | Recall | F1-score | ROC-AUC |
 |---|---:|---:|---:|---:|---:|
-| CatBoost | 0.8998 | 0.7170 | 0.5838 | 0.6436 | 0.9272 |
-| Logistic Regression | 0.8410 | 0.4913 | 0.7435 | 0.5917 | 0.8932 |
-| Random Forest | 0.8942 | 0.7619 | 0.4607 | 0.5742 | 0.9182 |
+| Random Forest Tuned | 0.8929 | 0.6482 | 0.6754 | 0.6615 | 0.9232 |
+| CatBoost | 0.9019 | 0.7273 | 0.5864 | 0.6493 | 0.9295 |
+| Logistic Regression | 0.8589 | 0.5291 | 0.8089 | 0.6398 | 0.9203 |
+| Random Forest | 0.8978 | 0.7305 | 0.5393 | 0.6205 | 0.9202 |
 
-Лучшая модель по F1-score — `CatBoost`.
+Лучшая модель по F1-score — `Random Forest Tuned`.
 
 ## Проверка single prediction
 
@@ -182,6 +183,42 @@ frontend/index.html
 ```
 
 Форма отправляет запрос на `http://127.0.0.1:8000/predict` и показывает прогноз вместе с вероятностью покупки.
+
+## Docker
+
+Docker запускает сразу два сервиса: FastAPI backend и статический frontend на nginx.
+
+Сборка и запуск проекта:
+
+```bash
+docker compose up --build
+```
+
+После запуска доступны:
+
+```text
+Frontend: http://127.0.0.1:8080
+Backend health: http://127.0.0.1:8000/health
+Backend docs: http://127.0.0.1:8000/docs
+```
+
+Остановка контейнеров:
+
+```bash
+docker compose down
+```
+
+Быстрый запуск на Windows:
+
+```text
+run_project.bat
+```
+
+Этот файл запускает Docker Compose, ждёт готовности backend/frontend и открывает сайт в браузере. Для остановки можно использовать:
+
+```text
+stop_project.bat
+```
 
 ## Защита проекта
 
