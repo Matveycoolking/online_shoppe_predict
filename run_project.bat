@@ -37,12 +37,12 @@ if errorlevel 1 (
 )
 
 echo.
-echo Opening frontend: http://127.0.0.1:8080
-start "" "http://127.0.0.1:8080"
+echo Opening frontend: http://127.0.0.1:8080/?v=latest
+start "" "http://127.0.0.1:8080/?v=latest"
 
 echo.
 echo Project is running.
-echo Frontend: http://127.0.0.1:8080
+echo Frontend: http://127.0.0.1:8080/?v=latest
 echo Backend docs: http://127.0.0.1:8000/docs
 echo.
 echo To stop the project, run:

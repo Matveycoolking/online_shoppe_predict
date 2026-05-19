@@ -60,14 +60,6 @@ python -m pip install -r requirements.txt
 python -c "from src.data_loading import load_data; df = load_data(); print(df.shape); print(df.head())"
 ```
 
-## EDA
-
-```bash
-python -m src.eda
-```
-
-Графики сохраняются в `reports/figures/`, текстовый отчёт — в `reports/eda_summary.md`.
-
 ## Google Colab
 
 Для защиты анализ, обучение и сравнение моделей также перенесены в самостоятельный notebook:
@@ -97,7 +89,6 @@ python -m src.train
 
 Результаты сохраняются в:
 
-- `reports/model_comparison.csv`
 - `models/best_model.pkl`
 - `models/metadata.json`
 
@@ -219,7 +210,3 @@ run_project.bat
 ```text
 stop_project.bat
 ```
-
-## Защита проекта
-
-Краткий сценарий защиты находится в `DEFENSE_NOTES.md`.

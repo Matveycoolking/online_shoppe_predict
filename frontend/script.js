@@ -20,11 +20,54 @@ const numericFields = [
   "SpecialDay",
 ];
 
+const samples = {
+  low: {
+    Administrative: 0,
+    Administrative_Duration: 0,
+    Informational: 0,
+    Informational_Duration: 0,
+    ProductRelated: 4,
+    ProductRelated_Duration: 85,
+    BounceRates: 0.08,
+    ExitRates: 0.12,
+    PageValues: 0,
+    SpecialDay: 0,
+    Month: "May",
+    OperatingSystems: 2,
+    Browser: 2,
+    Region: 1,
+    TrafficType: 3,
+    VisitorType: "Returning_Visitor",
+    Weekend: false,
+  },
+  high: {
+    Administrative: 4,
+    Administrative_Duration: 120,
+    Informational: 1,
+    Informational_Duration: 35,
+    ProductRelated: 38,
+    ProductRelated_Duration: 1850,
+    BounceRates: 0.005,
+    ExitRates: 0.018,
+    PageValues: 32,
+    SpecialDay: 0,
+    Month: "Nov",
+    OperatingSystems: 2,
+    Browser: 2,
+    Region: 1,
+    TrafficType: 2,
+    VisitorType: "New_Visitor",
+    Weekend: true,
+  },
+};
+
 const form = document.querySelector("#prediction-form");
 const button = document.querySelector("#submit-button");
 const result = document.querySelector("#result");
 const resultTitle = document.querySelector("#result-title");
 const resultProbability = document.querySelector("#result-probability");
+const probabilityFill = document.querySelector("#probability-fill");
+const scoreValue = document.querySelector("#score-value");
 
 function buildPayload(formData) {
   const payload = {};
@@ -44,23 +87,53 @@ function buildPayload(formData) {
   return payload;
 }
 
+function setProbabilityMeter(probability) {
+  const percent = Math.max(0, Math.min(100, Math.round(probability * 100)));
+  probabilityFill.style.width = `${percent}%`;
+  result.style.setProperty("--score", `${percent}%`);
+  scoreValue.textContent = `${percent}%`;
+  return percent;
+}
+
 function showResult(data) {
-  const probability = Math.round(data.purchase_probability * 100);
-  result.className = `result-panel ${data.prediction ? "positive" : "negative"}`;
+  const probability = setProbabilityMeter(data.purchase_probability);
+  result.className = `result-panel has-result ${data.prediction ? "positive" : "negative"}`;
   resultTitle.textContent = data.prediction ? "Покупка вероятна" : "Покупка маловероятна";
   resultProbability.textContent = `Вероятность покупки: ${probability}%`;
 }
 
 function showError() {
-  result.className = "result-panel error";
+  result.className = "result-panel has-result error";
   resultTitle.textContent = "Не удалось получить прогноз";
-  resultProbability.textContent = "Проверьте, запущен ли backend.";
+  resultProbability.textContent = "Проверьте, что backend запущен и доступен на порту 8000.";
+  setProbabilityMeter(0);
 }
+
+function fillSample(sampleName) {
+  const sample = samples[sampleName];
+  if (!sample) {
+    return;
+  }
+
+  Object.entries(sample).forEach(([field, value]) => {
+    const control = form.elements[field];
+    if (!control) {
+      return;
+    }
+    control.value = String(value);
+  });
+}
+
+document.querySelectorAll("[data-sample]").forEach((sampleButton) => {
+  sampleButton.addEventListener("click", () => {
+    fillSample(sampleButton.dataset.sample);
+  });
+});
 
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
   button.disabled = true;
-  button.textContent = "Запрос выполняется...";
+  button.textContent = "Выполняю прогноз...";
 
   try {
     const payload = buildPayload(new FormData(form));
@@ -82,6 +155,6 @@ form.addEventListener("submit", async (event) => {
     showError();
   } finally {
     button.disabled = false;
-    button.textContent = "Предсказать";
+    button.textContent = "Получить прогноз";
   }
 });

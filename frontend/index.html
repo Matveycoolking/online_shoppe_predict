@@ -4,123 +4,235 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Покупательское намерение</title>
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="style.css?v=latest" />
   </head>
   <body>
     <main class="page">
-      <section class="intro">
-        <div>
-          <p class="eyebrow">ML demo</p>
+      <section class="hero">
+        <div class="hero-content">
           <h1>Покупательское намерение в интернет-магазине</h1>
           <p class="lead">
-            Введите параметры пользовательской сессии, чтобы получить прогноз покупки и вероятность положительного класса.
+            Введите параметры пользовательской сессии. Модель оценит, завершится ли визит покупкой,
+            и покажет вероятность покупки в процентах.
           </p>
         </div>
-        <div class="status-note">Backend: http://127.0.0.1:8000</div>
+        <div class="hero-card">
+          <span class="status-dot"></span>
+          <div>
+            <strong>FastAPI backend</strong>
+            <span>http://127.0.0.1:8000</span>
+          </div>
+        </div>
       </section>
 
       <section class="workspace">
         <form id="prediction-form" class="form-panel">
-          <div class="form-grid">
-            <label>
-              Административные страницы
-              <input name="Administrative" type="number" step="1" value="1" required />
-            </label>
-            <label>
-              Время на административных страницах
-              <input name="Administrative_Duration" type="number" step="0.1" value="20.5" required />
-            </label>
-            <label>
-              Информационные страницы
-              <input name="Informational" type="number" step="1" value="0" required />
-            </label>
-            <label>
-              Время на информационных страницах
-              <input name="Informational_Duration" type="number" step="0.1" value="0.0" required />
-            </label>
-            <label>
-              Страницы товаров
-              <input name="ProductRelated" type="number" step="1" value="5" required />
-            </label>
-            <label>
-              Время на страницах товаров
-              <input name="ProductRelated_Duration" type="number" step="0.1" value="120.0" required />
-            </label>
-            <label>
-              Доля отказов
-              <input name="BounceRates" type="number" step="0.001" min="0" value="0.02" required />
-            </label>
-            <label>
-              Доля выходов
-              <input name="ExitRates" type="number" step="0.001" min="0" value="0.05" required />
-            </label>
-            <label>
-              Ценность страниц
-              <input name="PageValues" type="number" step="0.1" value="10.0" required />
-            </label>
-            <label>
-              Близость к празднику
-              <input name="SpecialDay" type="number" step="0.1" min="0" max="1" value="0.0" required />
-            </label>
-            <label>
-              Месяц
-              <select name="Month" required>
-                <option value="Feb">Feb</option>
-                <option value="Mar">Mar</option>
-                <option value="May">May</option>
-                <option value="June">June</option>
-                <option value="Jul">Jul</option>
-                <option value="Aug">Aug</option>
-                <option value="Sep">Sep</option>
-                <option value="Oct">Oct</option>
-                <option value="Nov" selected>Nov</option>
-                <option value="Dec">Dec</option>
-              </select>
-            </label>
-            <label>
-              Операционная система
-              <input name="OperatingSystems" type="number" step="1" value="2" required />
-            </label>
-            <label>
-              Браузер
-              <input name="Browser" type="number" step="1" value="2" required />
-            </label>
-            <label>
-              Регион
-              <input name="Region" type="number" step="1" value="1" required />
-            </label>
-            <label>
-              Тип трафика
-              <input name="TrafficType" type="number" step="1" value="3" required />
-            </label>
-            <label>
-              Тип посетителя
-              <select name="VisitorType" required>
-                <option value="Returning_Visitor" selected>Returning_Visitor</option>
-                <option value="New_Visitor">New_Visitor</option>
-                <option value="Other">Other</option>
-              </select>
-            </label>
-            <label>
-              Выходной день
-              <select name="Weekend" required>
-                <option value="false" selected>false</option>
-                <option value="true">true</option>
-              </select>
-            </label>
+          <div class="panel-heading">
+            <div>
+              <p class="section-kicker">Входные данные</p>
+              <h2>Параметры сессии</h2>
+            </div>
+            <div class="sample-actions" aria-label="Примеры заполнения">
+              <button class="ghost-button" type="button" data-sample="low">Низкий шанс</button>
+              <button class="ghost-button" type="button" data-sample="high">Высокий шанс</button>
+            </div>
           </div>
 
-          <button type="submit" id="submit-button">Предсказать</button>
+          <fieldset>
+            <legend>Поведение на сайте</legend>
+            <div class="form-grid">
+              <label class="field">
+                <span class="field-label">Административные страницы</span>
+                <span class="input-wrap">
+                  <input name="Administrative" type="number" step="1" min="0" value="1" required />
+                  <span class="unit">страниц</span>
+                </span>
+              </label>
+
+              <label class="field">
+                <span class="field-label">Время на административных страницах</span>
+                <span class="input-wrap">
+                  <input name="Administrative_Duration" type="number" step="0.1" min="0" value="20.5" required />
+                  <span class="unit">сек.</span>
+                </span>
+              </label>
+
+              <label class="field">
+                <span class="field-label">Информационные страницы</span>
+                <span class="input-wrap">
+                  <input name="Informational" type="number" step="1" min="0" value="0" required />
+                  <span class="unit">страниц</span>
+                </span>
+              </label>
+
+              <label class="field">
+                <span class="field-label">Время на информационных страницах</span>
+                <span class="input-wrap">
+                  <input name="Informational_Duration" type="number" step="0.1" min="0" value="0.0" required />
+                  <span class="unit">сек.</span>
+                </span>
+              </label>
+
+              <label class="field">
+                <span class="field-label">Страницы товаров</span>
+                <span class="input-wrap">
+                  <input name="ProductRelated" type="number" step="1" min="0" value="5" required />
+                  <span class="unit">страниц</span>
+                </span>
+              </label>
+
+              <label class="field">
+                <span class="field-label">Время на страницах товаров</span>
+                <span class="input-wrap">
+                  <input name="ProductRelated_Duration" type="number" step="0.1" min="0" value="120.0" required />
+                  <span class="unit">сек.</span>
+                </span>
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Качество сессии</legend>
+            <div class="form-grid">
+              <label class="field">
+                <span class="field-label">Доля отказов</span>
+                <span class="input-wrap">
+                  <input name="BounceRates" type="number" step="0.001" min="0" max="1" value="0.02" required />
+                  <span class="unit">0-1</span>
+                </span>
+              </label>
+
+              <label class="field">
+                <span class="field-label">Доля выходов</span>
+                <span class="input-wrap">
+                  <input name="ExitRates" type="number" step="0.001" min="0" max="1" value="0.05" required />
+                  <span class="unit">0-1</span>
+                </span>
+              </label>
+
+              <label class="field">
+                <span class="field-label">Ценность страниц</span>
+                <span class="input-wrap">
+                  <input name="PageValues" type="number" step="0.1" min="0" value="10.0" required />
+                  <span class="unit">баллов</span>
+                </span>
+              </label>
+
+              <label class="field">
+                <span class="field-label">Близость к празднику</span>
+                <span class="input-wrap">
+                  <input name="SpecialDay" type="number" step="0.1" min="0" max="1" value="0.0" required />
+                  <span class="unit">0-1</span>
+                </span>
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Контекст визита</legend>
+            <div class="form-grid">
+              <label class="field">
+                <span class="field-label">Месяц</span>
+                <select name="Month" required>
+                  <option value="Feb">Февраль</option>
+                  <option value="Mar">Март</option>
+                  <option value="May">Май</option>
+                  <option value="June">Июнь</option>
+                  <option value="Jul">Июль</option>
+                  <option value="Aug">Август</option>
+                  <option value="Sep">Сентябрь</option>
+                  <option value="Oct">Октябрь</option>
+                  <option value="Nov" selected>Ноябрь</option>
+                  <option value="Dec">Декабрь</option>
+                </select>
+              </label>
+
+              <label class="field">
+                <span class="field-label">Тип посетителя</span>
+                <select name="VisitorType" required>
+                  <option value="Returning_Visitor" selected>Постоянный посетитель</option>
+                  <option value="New_Visitor">Новый посетитель</option>
+                  <option value="Other">Другой тип</option>
+                </select>
+              </label>
+
+              <label class="field">
+                <span class="field-label">Выходной день</span>
+                <select name="Weekend" required>
+                  <option value="false" selected>Нет</option>
+                  <option value="true">Да</option>
+                </select>
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Технические признаки</legend>
+            <div class="form-grid">
+              <label class="field">
+                <span class="field-label">Операционная система</span>
+                <span class="input-wrap">
+                  <input name="OperatingSystems" type="number" step="1" min="1" value="2" required />
+                  <span class="unit">код</span>
+                </span>
+              </label>
+
+              <label class="field">
+                <span class="field-label">Браузер</span>
+                <span class="input-wrap">
+                  <input name="Browser" type="number" step="1" min="1" value="2" required />
+                  <span class="unit">код</span>
+                </span>
+              </label>
+
+              <label class="field">
+                <span class="field-label">Регион</span>
+                <span class="input-wrap">
+                  <input name="Region" type="number" step="1" min="1" value="1" required />
+                  <span class="unit">код</span>
+                </span>
+              </label>
+
+              <label class="field">
+                <span class="field-label">Тип трафика</span>
+                <span class="input-wrap">
+                  <input name="TrafficType" type="number" step="1" min="1" value="3" required />
+                  <span class="unit">код</span>
+                </span>
+              </label>
+            </div>
+          </fieldset>
+
+          <button class="submit-button" type="submit" id="submit-button">Получить прогноз</button>
         </form>
 
         <aside class="result-panel" id="result">
-          <p class="result-label">Результат</p>
-          <h2 id="result-title">Ожидает ввода</h2>
+          <p class="section-kicker">Результат модели</p>
+          <h2 id="result-title">Ожидает ввод</h2>
+          <div class="score-chart" id="score-chart" aria-hidden="true">
+            <div class="score-ring">
+              <span id="score-value">0%</span>
+            </div>
+            <span class="score-caption">вероятность покупки</span>
+          </div>
           <p id="result-probability">Вероятность покупки появится после запроса.</p>
+          <div class="probability-meter" aria-hidden="true">
+            <span id="probability-fill"></span>
+          </div>
+          <div class="result-details">
+            <div>
+              <span>Класс 1</span>
+              <strong>покупка</strong>
+            </div>
+            <div>
+              <span>Класс 0</span>
+              <strong>нет покупки</strong>
+            </div>
+          </div>
         </aside>
       </section>
     </main>
 
-    <script src="script.js"></script>
+    <script src="script.js?v=latest"></script>
   </body>
 </html>
