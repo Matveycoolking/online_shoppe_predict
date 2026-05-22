@@ -50,7 +50,7 @@ body::before {
 
 .hero {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 290px;
+  grid-template-columns: minmax(0, 1fr);
   gap: 24px;
   align-items: end;
   margin-bottom: 24px;
@@ -91,36 +91,6 @@ h1 {
   color: var(--muted);
   font-size: 16px;
   line-height: 1.55;
-}
-
-.hero-card {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  min-height: 82px;
-  padding: 16px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--panel);
-}
-
-.hero-card strong,
-.hero-card span {
-  display: block;
-}
-
-.hero-card span:not(.status-dot) {
-  margin-top: 4px;
-  color: var(--muted);
-  font-size: 13px;
-}
-
-.status-dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: var(--success);
-  box-shadow: 0 0 0 6px rgba(21, 128, 61, 0.12);
 }
 
 .workspace {

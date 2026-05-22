@@ -4,7 +4,16 @@ setlocal
 cd /d "%~dp0"
 
 echo Starting backend and frontend with Docker...
-docker compose up --build -d
+docker compose build --no-cache frontend
+if errorlevel 1 (
+    echo.
+    echo Failed to rebuild frontend container.
+    echo Make sure Docker Desktop is running, then try again.
+    pause
+    exit /b 1
+)
+
+docker compose up --build --force-recreate -d
 if errorlevel 1 (
     echo.
     echo Failed to start Docker containers.
@@ -37,12 +46,13 @@ if errorlevel 1 (
 )
 
 echo.
-echo Opening frontend: http://127.0.0.1:8080/?v=latest
-start "" "http://127.0.0.1:8080/?v=latest"
+set "CACHE_BUSTER=%RANDOM%%RANDOM%"
+echo Opening frontend: http://127.0.0.1:8080/?v=%CACHE_BUSTER%
+start "" "http://127.0.0.1:8080/?v=%CACHE_BUSTER%"
 
 echo.
 echo Project is running.
-echo Frontend: http://127.0.0.1:8080/?v=latest
+echo Frontend: http://127.0.0.1:8080/?v=%CACHE_BUSTER%
 echo Backend docs: http://127.0.0.1:8000/docs
 echo.
 echo To stop the project, run:
