@@ -1,212 +1,225 @@
 # Покупательское намерение в интернет-магазине
 
-Учебный итоговый ML-проект: система прогнозирует, завершится ли пользовательская сессия интернет-магазина покупкой.
+ML-сервис для прогнозирования вероятности покупки по параметрам пользовательской сессии интернет-магазина.
 
-## Задача
+Проект решает задачу бинарной классификации:
 
-Это задача бинарной классификации. Целевая переменная:
+- `Revenue = 0` — покупка не совершена;
+- `Revenue = 1` — покупка совершена.
 
-```text
-Revenue
+## Запуск проекта
+
+Команды выполняются из корня проекта:
+
+```powershell
+cd C:\Users\где находиться проект
 ```
 
-- `False` / `0` — покупка не совершена.
-- `True` / `1` — покупка совершена.
+### 1. Консольный запуск
 
-## Датасет
+Установить зависимости:
 
-Используется UCI Online Shoppers Purchasing Intention Dataset. Файл с данными должен находиться в `data/data.csv`.
+```powershell
+python -m pip install -r requirements.txt
+```
 
-Признаки:
+Проверить загрузку данных:
 
-- `Administrative`, `Administrative_Duration`
-- `Informational`, `Informational_Duration`
-- `ProductRelated`, `ProductRelated_Duration`
-- `BounceRates`, `ExitRates`, `PageValues`, `SpecialDay`
-- `Month`, `OperatingSystems`, `Browser`, `Region`, `TrafficType`, `VisitorType`, `Weekend`
-- `Revenue`
+```powershell
+python -c "from src.data_loading import load_data; df = load_data(); print(df.shape)"
+```
+
+При необходимости переобучить модель:
+
+```powershell
+python -m src.train
+```
+
+Запустить backend:
+
+```powershell
+python -m uvicorn backend.main:app --reload
+```
+
+Открыть frontend:
+
+```powershell
+Start-Process .\frontend\index.html
+```
+
+Адреса после запуска backend:
+
+```text
+API docs: http://127.0.0.1:8000/docs
+Health:   http://127.0.0.1:8000/health
+Predict:  http://127.0.0.1:8000/predict
+```
+
+### 2. Быстрый запуск
+
+Через Docker Compose:
+
+```powershell
+docker compose up --build
+```
+
+После запуска:
+
+```text
+Frontend:     http://127.0.0.1:8080
+Backend docs: http://127.0.0.1:8000/docs
+```
+
+Остановка:
+
+```powershell
+docker compose down
+```
+
+Быстрый запуск на Windows через bat-файл:
+
+```powershell
+.\run_project.bat
+```
+
+Остановка на Windows:
+
+```powershell
+.\stop_project.bat
+```
+
+## Данные
+
+Используется датасет **UCI Online Shoppers Purchasing Intention Dataset**.
+
+Файл с данными:
+
+```text
+data/data.csv
+```
+
+Основные признаки:
+
+- поведение на сайте: `Administrative`, `Informational`, `ProductRelated` и длительности;
+- качество сессии: `BounceRates`, `ExitRates`, `PageValues`, `SpecialDay`;
+- контекст визита: `Month`, `VisitorType`, `Weekend`;
+- технические признаки: `OperatingSystems`, `Browser`, `Region`, `TrafficType`;
+- целевая переменная: `Revenue`.
+
+В данных есть дисбаланс классов: покупок заметно меньше, чем сессий без покупки. Поэтому для оценки используются не только `accuracy`, но и `precision`, `recall`, `F1-score`, `ROC-AUC`, `PR-AUC`, `balanced_accuracy`.
 
 ## Структура проекта
 
 ```text
-data/
-notebooks/
-reports/
-reports/figures/
-models/
-src/
-backend/
-frontend/
-AGENTS.md
-sprints.md
-README.md
-REPORT.md
-DEFENSE_NOTES.md
-requirements.txt
+backend/       FastAPI backend
+data/          датасет
+doc/           презентация и материалы защиты
+frontend/      статический frontend
+GoogleColab/   notebooks с EDA и обучением
+models/        сохранённая модель и metadata
+src/           код загрузки данных, preprocessing, обучения и предсказания
 ```
 
-## Установка
-
-Команды нужно запускать из корня проекта:
-
-```bash
-cd C:\Users\matve\Desktop\InternetBying
-python -m pip install -r requirements.txt
-```
-
-## Проверка загрузки данных
-
-```bash
-python -c "from src.data_loading import load_data; df = load_data(); print(df.shape); print(df.head())"
-```
-
-## Google Colab
-
-Для защиты анализ, обучение и сравнение моделей также перенесены в самостоятельный notebook:
+Ключевые файлы:
 
 ```text
-notebooks/online_shopper_intention_colab.ipynb
+src/train.py          обучение и сравнение моделей
+src/predict.py        загрузка модели и single prediction
+src/preprocessing.py  feature engineering и preprocessing pipeline
+backend/main.py       API сервиса
+frontend/index.html   интерфейс для демонстрации
+docker-compose.yml    запуск backend и frontend
 ```
 
-Как использовать:
-
-1. Открыть notebook в Google Colab.
-2. Запустить ячейки сверху вниз.
-3. В ячейке загрузки выбрать файл `data.csv`.
-4. После обучения скачать `best_model.pkl`, `metadata.json` и `model_comparison.csv`.
-5. При необходимости положить скачанные файлы в локальный проект:
-   - `models/best_model.pkl`
-   - `models/metadata.json`
-   - `reports/model_comparison.csv`
-
-## Обучение моделей
+## Обучение модели
 
 ```bash
 python -m src.train
 ```
 
-Команда обучает Logistic Regression, Random Forest, CatBoost и дополнительно подбирает гиперпараметры для `Random Forest Tuned`. Если CatBoost недоступен, используется `HistGradientBoostingClassifier`.
+Обучаются и сравниваются:
 
-Результаты сохраняются в:
+- Logistic Regression;
+- Random Forest;
+- CatBoost;
+- Random Forest Tuned.
 
-- `models/best_model.pkl`
-- `models/metadata.json`
+Лучший pipeline сохраняется в:
 
-## Результаты моделей
+```text
+models/best_model.pkl
+models/metadata.json
+```
 
-| Модель | Accuracy | Precision | Recall | F1-score | ROC-AUC |
-|---|---:|---:|---:|---:|---:|
-| Random Forest Tuned | 0.8929 | 0.6482 | 0.6754 | 0.6615 | 0.9232 |
-| CatBoost | 0.9019 | 0.7273 | 0.5864 | 0.6493 | 0.9295 |
-| Logistic Regression | 0.8589 | 0.5291 | 0.8089 | 0.6398 | 0.9203 |
-| Random Forest | 0.8978 | 0.7305 | 0.5393 | 0.6205 | 0.9202 |
+## Результаты
 
-Лучшая модель по F1-score — `Random Forest Tuned`.
+Финальная модель: **Random Forest Tuned**.
 
-## Проверка single prediction
+Метрики на test-выборке:
+
+| Метрика | Значение |
+|---|---:|
+| Accuracy | 0.8978 |
+| Balanced accuracy | 0.8081 |
+| Precision | 0.6675 |
+| Recall | 0.6780 |
+| F1-score | 0.6727 |
+| ROC-AUC | 0.9253 |
+| PR-AUC | 0.7347 |
+
+Для анализа дисбаланса и переобучения дополнительно проверялись:
+
+- регуляризация Random Forest;
+- resampling: RandomOverSampler, SMOTE, RandomUnderSampler;
+- подбор threshold;
+- cross-validation.
+
+Итоговая модель оставлена по лучшему `F1-score` на test-выборке.
+
+## Single prediction
 
 ```bash
 python -c "from src.predict import predict_single; print(predict_single({'Administrative': 1, 'Administrative_Duration': 20.5, 'Informational': 0, 'Informational_Duration': 0.0, 'ProductRelated': 5, 'ProductRelated_Duration': 120.0, 'BounceRates': 0.02, 'ExitRates': 0.05, 'PageValues': 10.0, 'SpecialDay': 0.0, 'Month': 'Nov', 'OperatingSystems': 2, 'Browser': 2, 'Region': 1, 'TrafficType': 3, 'VisitorType': 'Returning_Visitor', 'Weekend': False}))"
 ```
 
-## Запуск backend
+## API
 
-```bash
-python -m uvicorn backend.main:app --reload
-```
-
-Swagger UI:
-
-```text
-http://127.0.0.1:8000/docs
-```
-
-Health endpoint:
-
-```text
-http://127.0.0.1:8000/health
-```
-
-## Пример API-запроса
+Пример запроса:
 
 ```bash
 curl -X POST "http://127.0.0.1:8000/predict" \
--H "Content-Type: application/json" \
--d '{
-  "Administrative": 1,
-  "Administrative_Duration": 20.5,
-  "Informational": 0,
-  "Informational_Duration": 0.0,
-  "ProductRelated": 5,
-  "ProductRelated_Duration": 120.0,
-  "BounceRates": 0.02,
-  "ExitRates": 0.05,
-  "PageValues": 10.0,
-  "SpecialDay": 0.0,
-  "Month": "Nov",
-  "OperatingSystems": 2,
-  "Browser": 2,
-  "Region": 1,
-  "TrafficType": 3,
-  "VisitorType": "Returning_Visitor",
-  "Weekend": false
-}'
+  -H "Content-Type: application/json" \
+  -d '{
+    "Administrative": 1,
+    "Administrative_Duration": 20.5,
+    "Informational": 0,
+    "Informational_Duration": 0.0,
+    "ProductRelated": 5,
+    "ProductRelated_Duration": 120.0,
+    "BounceRates": 0.02,
+    "ExitRates": 0.05,
+    "PageValues": 10.0,
+    "SpecialDay": 0.0,
+    "Month": "Nov",
+    "OperatingSystems": 2,
+    "Browser": 2,
+    "Region": 1,
+    "TrafficType": 3,
+    "VisitorType": "Returning_Visitor",
+    "Weekend": false
+  }'
 ```
 
-## Запуск frontend
+## Frontend
 
-1. Обучить модель:
-
-```bash
-python -m src.train
-```
-
-2. Запустить backend:
-
-```bash
-python -m uvicorn backend.main:app --reload
-```
-
-3. Открыть файл:
+Frontend находится в папке:
 
 ```text
-frontend/index.html
+frontend/
 ```
 
-Форма отправляет запрос на `http://127.0.0.1:8000/predict` и показывает прогноз вместе с вероятностью покупки.
+Форма отправляет запрос в backend и показывает:
 
-## Docker
-
-Docker запускает сразу два сервиса: FastAPI backend и статический frontend на nginx.
-
-Сборка и запуск проекта:
-
-```bash
-docker compose up --build
-```
-
-После запуска доступны:
-
-```text
-Frontend: http://127.0.0.1:8080
-Backend health: http://127.0.0.1:8000/health
-Backend docs: http://127.0.0.1:8000/docs
-```
-
-Остановка контейнеров:
-
-```bash
-docker compose down
-```
-
-Быстрый запуск на Windows:
-
-```text
-run_project.bat
-```
-
-Этот файл запускает Docker Compose, ждёт готовности backend/frontend и открывает сайт в браузере. Для остановки можно использовать:
-
-```text
-stop_project.bat
-```
+- прогноз класса;
+- вероятность покупки;
+- визуальный индикатор вероятности.
